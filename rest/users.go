@@ -83,7 +83,7 @@ const (
 
 var loginRequset string
 
-func (c *Client) LoginViaGoogle(credentials *models.UserCredentials) error {
+func (c *Client) LoginViaGoogle(rcUrl string, credentials *models.UserCredentials) error {
 	if c.auth != nil {
 		return nil
 	}
@@ -95,7 +95,7 @@ func (c *Client) LoginViaGoogle(credentials *models.UserCredentials) error {
 		}
 	}
 
-	uid, utoken := LoginUsingSelenium()
+	uid, utoken := LoginUsingSelenium(rcUrl)
 	credentials.ID = uid
 	credentials.Token = utoken
 	c.auth = &authInfo{id: credentials.ID, token: credentials.Token}
@@ -113,7 +113,7 @@ func (c *Client) TryCredential(credentials *models.UserCredentials) bool {
 	return true
 }
 
-func LoginUsingSelenium() (string, string) {
+func LoginUsingSelenium(rcUrl string) (string, string) {
 	pwd, _ := os.Getwd()
 	seleniumPath := pwd + "/webdriver/selenium-server-standalone-3.14.0.jar"
 
@@ -149,7 +149,7 @@ func LoginUsingSelenium() (string, string) {
 	defer wd.Quit()
 
 	// Navigate to the simple playground interface.
-	wd.Get("https://chat.tools-stg.flnltd.com")
+	wd.Get(rcUrl)
 	err = wd.Wait(LoggedIn)
 
 	uId, _ := wd.GetCookie("rc_uid")
