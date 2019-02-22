@@ -105,8 +105,8 @@ func (c *Client) LoginViaGoogle(credentials *models.UserCredentials) error {
 
 func (c *Client) TryCredential(credentials *models.UserCredentials) bool {
 	c.auth = &authInfo{id: credentials.ID, token: credentials.Token}
-	res, err := c.GetPublicChannels()
-	fmt.Println(res)
+	_, err := c.GetPublicChannels()
+	// fmt.Println(res)
 	if err != nil {
 		return false
 	}
@@ -118,9 +118,9 @@ func LoginUsingSelenium() (string, string) {
 	seleniumPath := pwd + "/webdriver/selenium-server-standalone-3.14.0.jar"
 
 	var geckoDriverPath string
-	fmt.Println("!!!!!!!!")
-	fmt.Println(runtime.GOOS)
-	fmt.Println("!!!!!!!!")
+	// fmt.Println("!!!!!!!!")
+	// fmt.Println(runtime.GOOS)
+	// fmt.Println("!!!!!!!!")
 	if runtime.GOOS == "linux" {
 		geckoDriverPath = pwd + "/webdriver/geckodriver-v0.23.0-linux64"
 	} else if runtime.GOOS == "darwin" {
@@ -149,7 +149,7 @@ func LoginUsingSelenium() (string, string) {
 	defer wd.Quit()
 
 	// Navigate to the simple playground interface.
-	wd.Get("https://chat.tools.flnltd.com")
+	wd.Get("https://chat.tools-stg.flnltd.com")
 	err = wd.Wait(LoggedIn)
 
 	uId, _ := wd.GetCookie("rc_uid")
