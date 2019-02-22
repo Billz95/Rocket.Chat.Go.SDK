@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"strconv"
 
+	"github.com/Billz95/Rocket.Chat.Go.SDK/models"
 	"github.com/Jeffail/gabs"
-	"github.com/RocketChat/Rocket.Chat.Go.SDK/models"
 )
 
 type ddpLoginRequest struct {

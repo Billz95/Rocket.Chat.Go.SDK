@@ -3,8 +3,8 @@ package realtime
 import (
 	"log"
 
+	"github.com/Billz95/Rocket.Chat.Go.SDK/models"
 	"github.com/Jeffail/gabs"
-	"github.com/RocketChat/Rocket.Chat.Go.SDK/models"
 )
 
 // GetPermissions gets permissions

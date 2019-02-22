@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/Billz95/Rocket.Chat.Go.SDK/models"
+	"github.com/tebeka/selenium"
 	"net/url"
+	"os"
 	"time"
-
-	"github.com/RocketChat/Rocket.Chat.Go.SDK/models"
 )
 
 type logoutResponse struct {
@@ -72,6 +73,85 @@ func (c *Client) Login(credentials *models.UserCredentials) error {
 	c.auth = &authInfo{id: response.Data.UserID, token: response.Data.Token}
 	credentials.ID, credentials.Token = response.Data.UserID, response.Data.Token
 	return nil
+}
+
+const (
+	// These paths will be different on your system.
+	port = 8123
+)
+
+var loginRequset string
+
+func (c *Client) LoginViaGoogle(credentials *models.UserCredentials) error {
+	if c.auth != nil {
+		return nil
+	}
+
+	if credentials.Token != "" {
+		succ := c.TryCredential(credentials)
+		if succ {
+			return nil
+		}
+	}
+
+	uid, utoken := LoginUsingSelenium()
+	credentials.ID = uid
+	credentials.Token = utoken
+	c.auth = &authInfo{id: credentials.ID, token: credentials.Token}
+
+	return nil
+}
+
+func (c *Client) TryCredential(credentials *models.UserCredentials) bool {
+	c.auth = &authInfo{id: credentials.ID, token: credentials.Token}
+	_, err := c.GetPublicChannels()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func LoginUsingSelenium() (string, string) {
+	pwd, _ := os.Getwd()
+	seleniumPath := pwd + "/vendor/github.com/tebeka/selenium/vendor/selenium-server-standalone-3.14.0.jar"
+	geckoDriverPath := pwd + "/vendor/github.com/tebeka/selenium/vendor/geckodriver_mac"
+
+	opts := []selenium.ServiceOption{
+		selenium.GeckoDriver(geckoDriverPath), // Specify the path to GeckoDriver in order to use Firefox.
+		selenium.Output(os.Stderr),            // Output debug information to STDERR.
+	}
+
+	service, err := selenium.NewSeleniumService(seleniumPath, port, opts...)
+	if err != nil {
+		panic(err) // panic is used only as an example and is not otherwise recommended.
+	}
+	defer service.Stop()
+
+	// Connect to the WebDriver instance running locally.
+	caps := selenium.Capabilities{"browserName": "firefox"}
+	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
+
+	if err != nil {
+		panic(err)
+	}
+	defer wd.Quit()
+
+	// Navigate to the simple playground interface.
+	wd.Get("https://chat.tools.flnltd.com")
+	err = wd.Wait(LoggedIn)
+
+	uId, _ := wd.GetCookie("rc_uid")
+	uToken, _ := wd.GetCookie("rc_token")
+	return uId.Value, uToken.Value
+}
+
+func LoggedIn(wd selenium.WebDriver) (bool, error) {
+	_, err2 := wd.GetCookie("rc_token")
+	return err2 == nil, nil
+}
+
+func Halt(wd selenium.WebDriver) (bool, error) {
+	return false, nil
 }
 
 // CreateToken creates an access token for a user
