@@ -8,6 +8,7 @@ import (
 	"github.com/tebeka/selenium"
 	"net/url"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -104,7 +105,8 @@ func (c *Client) LoginViaGoogle(credentials *models.UserCredentials) error {
 
 func (c *Client) TryCredential(credentials *models.UserCredentials) bool {
 	c.auth = &authInfo{id: credentials.ID, token: credentials.Token}
-	_, err := c.GetPublicChannels()
+	res, err := c.GetPublicChannels()
+	fmt.Println(res)
 	if err != nil {
 		return false
 	}
@@ -113,8 +115,18 @@ func (c *Client) TryCredential(credentials *models.UserCredentials) bool {
 
 func LoginUsingSelenium() (string, string) {
 	pwd, _ := os.Getwd()
-	seleniumPath := pwd + "/vendor/github.com/tebeka/selenium/vendor/selenium-server-standalone-3.14.0.jar"
-	geckoDriverPath := pwd + "/vendor/github.com/tebeka/selenium/vendor/geckodriver_mac"
+	seleniumPath := pwd + "/webdriver/selenium-server-standalone-3.14.0.jar"
+
+	var geckoDriverPath string
+	fmt.Println("!!!!!!!!")
+	fmt.Println(runtime.GOOS)
+	fmt.Println("!!!!!!!!")
+	if runtime.GOOS == "linux" {
+		geckoDriverPath = pwd + "/webdriver/geckodriver-v0.23.0-linux64"
+	} else if runtime.GOOS == "darwin" {
+		geckoDriverPath = pwd + "/webdriver/geckodriver_mac"
+
+	}
 
 	opts := []selenium.ServiceOption{
 		selenium.GeckoDriver(geckoDriverPath), // Specify the path to GeckoDriver in order to use Firefox.
